@@ -1,5 +1,5 @@
 @startuml technical
-title Техническая схема quiz_app.py
+title Техническая блок-схема quiz_app.py (квадраты и ромбики)
 
 skinparam shadowing false
 skinparam roundcorner 0
