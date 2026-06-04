@@ -1,0 +1,119 @@
+@startuml technical
+title Техническая UML — викторина (Flask)
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "Клиент" {
+  [Браузер] as Browser
+}
+
+package "Сервер Flask (quiz_app.py)" {
+  component "Flask App" as FlaskApp {
+    [Маршруты] as Routes
+    [Сессия] as SessionStore
+  }
+  component "Шаблоны Jinja2" as Templates {
+    [index.html]
+    [question.html]
+    [result.html]
+    [base.html]
+  }
+  component "Статика" as Static {
+    [style.css]
+  }
+}
+
+database "questions.json" as QuestionsDB
+file "results.txt" as ResultsFile
+
+Browser --> Routes : HTTP GET/POST
+Routes --> SessionStore : чтение/запись\nplayer_name, topic,\nindex, score, answers
+Routes --> QuestionsDB : load_questions()\nget_questions(topic)
+Routes --> ResultsFile : save_result()\n(после последнего ответа)
+Routes --> Templates : render_template()
+Templates --> Static : url_for('static')
+Browser <-- Templates : HTML
+
+note right of Routes
+  Маршруты:
+  / — index (сброс сессии)
+  /start POST — старт теста
+  /question — показ вопроса
+  /answer POST — проверка ответа
+  /result — итог и разбор
+  /restart — новый тест
+end note
+
+@enduml
+
+@startuml technical-class
+title Классы и структуры данных
+
+class FlaskApp {
+  secret_key
+  --
+  +index()
+  +start()
+  +question()
+  +answer()
+  +result()
+  +restart()
+}
+
+class QuizFunctions {
+  +load_questions() : dict
+  +get_topics() : list
+  +get_questions(topic) : list
+  +save_result(name, topic, score, total)
+}
+
+class Question {
+  question : str
+  options : list[str]
+  correct : int
+}
+
+class AnswerRecord {
+  question : str
+  chosen : int
+  correct : int
+  is_correct : bool
+}
+
+class SessionState {
+  player_name : str
+  topic : str
+  index : int
+  score : int
+  total : int
+  answers : list[AnswerRecord]
+}
+
+FlaskApp --> QuizFunctions
+QuizFunctions --> Question : читает из JSON
+SessionState *-- AnswerRecord
+FlaskApp ..> SessionState : session (cookie)
+
+@enduml
+
+@startuml technical-sequence
+title Последовательность: ответ на вопрос
+
+actor User
+participant Browser
+participant "Flask /answer" as Answer
+participant Session
+participant "questions.json" as JSON
+
+User -> Browser : выбирает вариант, «Ответить»
+Browser -> Answer : POST /answer (answer=N)
+Answer -> Session : topic, index
+Answer -> JSON : get_questions(topic)
+JSON --> Answer : список вопросов
+Answer -> Answer : сравнить N с correct
+Answer -> Session : score++, answers[], index++
+Answer -> Browser : 302 → /question
+Browser -> User : следующий вопрос или /result
+
+@enduml

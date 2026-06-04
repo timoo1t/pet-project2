@@ -1,0 +1,150 @@
+{
+  "Python": [
+    {
+      "question": "Какой метод используется для вывода текста в консоль в Python?",
+      "options": ["print()", "echo()", "console.log()", "System.out.println()"],
+      "correct": 0
+    },
+    {
+      "question": "Что такое list в Python?",
+      "options": [
+        "Упорядоченная изменяемая коллекция элементов",
+        "Неизменяемая последовательность символов",
+        "Словарь ключ-значение",
+        "Множество уникальных элементов"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой оператор используется для возведения в степень в Python?",
+      "options": ["**", "^", "pow", ">>"],
+      "correct": 0
+    },
+    {
+      "question": "Что делает ключевое слово def в Python?",
+      "options": [
+        "Определяет функцию",
+        "Объявляет переменную",
+        "Импортирует модуль",
+        "Завершает цикл"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой из этих типов данных в Python является неизменяемым?",
+      "options": ["tuple", "list", "dict", "set"],
+      "correct": 0
+    }
+  ],
+  "Java": [
+    {
+      "question": "Как объявить класс в Java?",
+      "options": [
+        "class MyClass { }",
+        "def MyClass():",
+        "struct MyClass {}",
+        "function MyClass() {}"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой метод является точкой входа в Java-приложение?",
+      "options": [
+        "public static void main(String[] args)",
+        "public void start()",
+        "static int main()",
+        "void run(String args)"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Что такое JVM?",
+      "options": [
+        "Виртуальная машина Java для выполнения байт-кода",
+        "Компилятор Java",
+        "Библиотека для работы с GUI",
+        "Система управления базами данных"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой модификатор доступа делает поле доступным только внутри класса?",
+      "options": ["private", "public", "protected", "static"],
+      "correct": 0
+    },
+    {
+      "question": "Какой примитивный тип используется для целых чисел в Java?",
+      "options": ["int", "Integer", "number", "long only"],
+      "correct": 0
+    }
+  ],
+  "C++": [
+    {
+      "question": "Какой символ используется для однострочного комментария в C++?",
+      "options": ["//", "#", "/*", "--"],
+      "correct": 0
+    },
+    {
+      "question": "Что такое указатель в C++?",
+      "options": [
+        "Переменная, хранящая адрес другой переменной",
+        "Ссылка на функцию без адреса",
+        "Тип данных для строк",
+        "Ключевое слово для наследования"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой заголовочный файл нужен для использования std::cout?",
+      "options": ["iostream", "stdio.h", "string", "vector"],
+      "correct": 0
+    },
+    {
+      "question": "Что делает оператор new в C++?",
+      "options": [
+        "Выделяет память в куче",
+        "Создаёт поток вывода",
+        "Объявляет константу",
+        "Завершает программу"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой цикл выполняется, пока условие истинно?",
+      "options": ["while", "for-each only", "do-until", "repeat"],
+      "correct": 0
+    }
+  ],
+  "JavaScript": [
+    {
+      "question": "Как объявить переменную с блочной областью видимости в JavaScript?",
+      "options": ["let", "var", "const only for objects", "def"],
+      "correct": 0
+    },
+    {
+      "question": "Что возвращает typeof для массива в JavaScript?",
+      "options": ["\"object\"", "\"array\"", "\"list\"", "\"undefined\""],
+      "correct": 0
+    },
+    {
+      "question": "Какой метод добавляет элемент в конец массива?",
+      "options": ["push()", "append()", "add()", "insert()"],
+      "correct": 0
+    },
+    {
+      "question": "Что такое Promise в JavaScript?",
+      "options": [
+        "Объект для работы с асинхронным кодом",
+        "Синхронная функция без возврата",
+        "Тип данных для чисел",
+        "Метод DOM-дерева"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "Какой оператор сравнивает значение и тип одновременно?",
+      "options": ["===", "==", "=", "!="],
+      "correct": 0
+    }
+  ]
+}

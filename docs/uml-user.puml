@@ -1,0 +1,72 @@
+@startuml user-activity
+title Пользовательская UML — шаги участника
+
+|Участник|
+start
+:Открыть http://127.0.0.1:5000/;
+note right
+  Открывается стартовая
+  страница «Добро пожаловать»
+end note
+
+:Ввести имя (необязательно);
+:Выбрать язык программирования\n(Python / Java / C++ / JavaScript);
+:Нажать «Начать тест»;
+
+repeat
+  :Прочитать вопрос;
+  :Увидеть прогресс\n(«Вопрос N из M»);
+  :Выбрать один вариант ответа;
+  :Нажать «Ответить»;
+repeat while (есть ещё вопросы?) is (да)
+->нет;
+
+:Увидеть экран «Результат»;
+:Посмотреть счёт (X / M и %);
+:Прочитать разбор\n(верно / неверно + правильный ответ);
+
+if (Пройти снова?) then (да)
+  :Нажать «Пройти снова»;
+  detach
+else (нет)
+  stop
+endif
+
+@enduml
+
+@startuml user-usecase
+title Сценарии использования (вид пользователя)
+
+left to right direction
+actor "Участник" as User
+
+rectangle "Викторина" {
+  usecase "Запустить тест" as UC1
+  usecase "Ответить на вопросы" as UC2
+  usecase "Посмотреть результат" as UC3
+  usecase "Пройти тест заново" as UC4
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+UC2 ..> UC1 : <<include>>
+UC3 ..> UC2 : <<include>>
+UC4 ..> UC3 : <<extend>>
+
+note bottom of UC1
+  Имя + тема → старт
+end note
+
+note bottom of UC2
+  Цикл: вопрос → ответ
+  до конца списка
+end note
+
+note bottom of UC3
+  Баллы, процент,
+  разбор по каждому вопросу
+end note
+
+@enduml

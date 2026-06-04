@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Старт — Викторина{% endblock %}
+{% block heading %}Добро пожаловать{% endblock %}
+
+{% block content %}
+<p class="lead">Проверьте знания: ответьте на вопросы с вариантами ответа. В конце увидите результат и разбор.</p>
+
+<form action="{{ url_for('start') }}" method="post" class="form">
+  <label for="player_name">Ваше имя (необязательно)</label>
+  <input type="text" id="player_name" name="player_name" placeholder="Например, Иван" maxlength="50" autocomplete="name">
+
+  <label for="topic">Язык программирования</label>
+  <select id="topic" name="topic" required>
+    <option value="" disabled selected>Выберите язык</option>
+    {% for t in topics %}
+    <option value="{{ t }}">{{ t }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" class="btn btn-primary">Начать тест</button>
+</form>
+{% endblock %}

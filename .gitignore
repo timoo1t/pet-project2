@@ -1,0 +1,13 @@
+# Сборка EXE
+build/
+dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Данные приложения
+results.txt

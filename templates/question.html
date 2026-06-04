@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Вопрос {{ number }} — Викторина{% endblock %}
+{% block heading %}Вопрос {{ number }} из {{ total }}{% endblock %}
+
+{% block content %}
+<p class="meta">Участник: <strong>{{ player_name }}</strong> · Тема: <strong>{{ topic }}</strong></p>
+<div class="progress-wrap">
+  <div class="progress-bar" style="width: {{ (number / total * 100)|round }}%"></div>
+</div>
+
+<p class="question-text">{{ question.question }}</p>
+
+<form action="{{ url_for('answer') }}" method="post" class="options">
+  {% for option in question.options %}
+  <label class="option">
+    <input type="radio" name="answer" value="{{ loop.index0 }}" required>
+    <span>{{ option }}</span>
+  </label>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary">Ответить</button>
+</form>
+{% endblock %}

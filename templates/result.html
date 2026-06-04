@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Результат — Викторина{% endblock %}
+{% block heading %}Результат{% endblock %}
+
+{% block content %}
+<div class="score-box {% if score == total %}score-perfect{% elif score >= total // 2 %}score-ok{% else %}score-low{% endif %}">
+  <p class="score-label">{{ player_name }} · {{ topic }}</p>
+  <p class="score-value">{{ score }} / {{ total }}</p>
+  <p class="score-percent">
+    {% if total %}{{ ((score / total) * 100)|round }}% правильных{% else %}—{% endif %}
+  </p>
+</div>
+
+{% if total %}
+<h2 class="subheading">Разбор ответов</h2>
+<ul class="review">
+  {% for item in answers %}
+  <li class="review-item {% if item.is_correct %}correct{% else %}wrong{% endif %}">
+    <p class="review-q">{{ loop.index }}. {{ item.question }}</p>
+    <p class="review-a">
+      {% if item.is_correct %}
+        Верно
+      {% else %}
+        Неверно. Правильный ответ: {{ questions[loop.index0].options[item.correct] }}
+      {% endif %}
+    </p>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<p class="hint">Результат сохранён в файл <code>results.txt</code></p>
+
+<a href="{{ url_for('restart') }}" class="btn btn-primary">Пройти снова</a>
+{% endblock %}
