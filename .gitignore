@@ -11,3 +11,8 @@ venv/
 
 # Данные приложения
 results.txt
+
+# PlantUML (скачивается для generate_png.py)
+docs/plantuml.jar
+docs/_tmp_render.puml
+docs/*_error.*

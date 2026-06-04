@@ -1,119 +1,169 @@
 @startuml technical
-title Техническая UML — викторина (Flask)
+title Техническая UML — сверху вниз (quiz_app.py)
 
-skinparam componentStyle rectangle
+top to bottom direction
 skinparam shadowing false
+skinparam nodesep 14
+skinparam ranksep 20
+skinparam classFontSize 10
 
-package "Клиент" {
-  [Браузер] as Browser
+class Imports {
+  import json
+  import sys
+  import threading
+  import webbrowser
+  from datetime import datetime
+  from pathlib import Path
+  from flask import Flask
+  from flask import redirect
+  from flask import render_template
+  from flask import request
+  from flask import session
+  from flask import url_for
 }
 
-package "Сервер Flask (quiz_app.py)" {
-  component "Flask App" as FlaskApp {
-    [Маршруты] as Routes
-    [Сессия] as SessionStore
-  }
-  component "Шаблоны Jinja2" as Templates {
-    [index.html]
-    [question.html]
-    [result.html]
-    [base.html]
-  }
-  component "Статика" as Static {
-    [style.css]
-  }
+class PathHelpers {
+  + _resource_dir()
+  + _writable_dir()
 }
 
-database "questions.json" as QuestionsDB
-file "results.txt" as ResultsFile
-
-Browser --> Routes : HTTP GET/POST
-Routes --> SessionStore : чтение/запись\nplayer_name, topic,\nindex, score, answers
-Routes --> QuestionsDB : load_questions()\nget_questions(topic)
-Routes --> ResultsFile : save_result()\n(после последнего ответа)
-Routes --> Templates : render_template()
-Templates --> Static : url_for('static')
-Browser <-- Templates : HTML
-
-note right of Routes
-  Маршруты:
-  / — index (сброс сессии)
-  /start POST — старт теста
-  /question — показ вопроса
-  /answer POST — проверка ответа
-  /result — итог и разбор
-  /restart — новый тест
-end note
-
-@enduml
-
-@startuml technical-class
-title Классы и структуры данных
+class Paths {
+  APP_DIR
+  DATA_DIR
+  QUESTIONS_FILE
+  RESULTS_FILE
+}
 
 class FlaskApp {
+  template_folder
+  static_folder
   secret_key
-  --
-  +index()
-  +start()
-  +question()
-  +answer()
-  +result()
-  +restart()
-}
-
-class QuizFunctions {
-  +load_questions() : dict
-  +get_topics() : list
-  +get_questions(topic) : list
-  +save_result(name, topic, score, total)
 }
 
 class Question {
-  question : str
-  options : list[str]
-  correct : int
+  question
+  options
+  correct
 }
 
 class AnswerRecord {
-  question : str
-  chosen : int
-  correct : int
-  is_correct : bool
+  question
+  chosen
+  correct
+  is_correct
 }
 
 class SessionState {
-  player_name : str
-  topic : str
-  index : int
-  score : int
-  total : int
-  answers : list[AnswerRecord]
+  player_name
+  topic
+  index
+  score
+  total
+  answers
 }
 
-FlaskApp --> QuizFunctions
-QuizFunctions --> Question : читает из JSON
+class questions_json <<storage>> {
+  topics to Question[]
+}
+
+class results_txt <<storage>> {
+  append log line
+}
+
+class DataFunctions {
+  + load_questions()
+  + get_topics()
+  + get_questions(topic)
+  + save_result(name, topic, score, total)
+}
+
+class QuizRoutes {
+  + index() GET /
+  + start() POST /start
+  + question() GET /question
+  + answer() POST /answer
+  + result() GET /result
+  + restart() GET /restart
+}
+
+class Templates {
+  base.html
+  index.html
+  question.html
+  result.html
+}
+
+class style_css <<static>> {
+  style.css
+}
+
+class Main {
+  + __main__
+  check QUESTIONS_FILE
+  Timer webbrowser
+  app.run()
+}
+
+class CycleStart {
+  1 POST /start
+  2 check topic
+  3 fill SessionState
+  4 redirect /question
+}
+
+class CycleLoop {
+  5 GET /question
+  6 check topic
+  7 read index
+  8 if index >= len goto result
+  9 render question.html
+  10 POST /answer
+  11 parse chosen
+  12 compare correct
+  13 update score
+  14 append AnswerRecord
+  15 index increment
+  16 redirect /question
+  17 WHILE index < total goto 5
+}
+
+class CycleEnd {
+  18 GET /result
+  19 save_result if done
+  20 render result.html
+  21 GET /restart optional
+  22 session.clear
+}
+
+Imports -down-> PathHelpers
+PathHelpers -down-> Paths
+Paths -down-> FlaskApp
+
+FlaskApp -down-> Question
+Question -down-> AnswerRecord
+AnswerRecord -down-> SessionState
+
+SessionState -down-> questions_json
+questions_json -down-> results_txt
+results_txt -down-> DataFunctions
+
+DataFunctions -down-> QuizRoutes
+QuizRoutes -down-> Templates
+Templates -down-> style_css
+style_css -down-> Main
+
+Main -down-> CycleStart
+CycleStart -down-> CycleLoop
+CycleLoop -down-> CycleEnd
+
 SessionState *-- AnswerRecord
-FlaskApp ..> SessionState : session (cookie)
-
-@enduml
-
-@startuml technical-sequence
-title Последовательность: ответ на вопрос
-
-actor User
-participant Browser
-participant "Flask /answer" as Answer
-participant Session
-participant "questions.json" as JSON
-
-User -> Browser : выбирает вариант, «Ответить»
-Browser -> Answer : POST /answer (answer=N)
-Answer -> Session : topic, index
-Answer -> JSON : get_questions(topic)
-JSON --> Answer : список вопросов
-Answer -> Answer : сравнить N с correct
-Answer -> Session : score++, answers[], index++
-Answer -> Browser : 302 → /question
-Browser -> User : следующий вопрос или /result
+questions_json *-- Question
+DataFunctions ..> questions_json
+DataFunctions ..> results_txt
+QuizRoutes ..> DataFunctions
+QuizRoutes ..> SessionState
+QuizRoutes ..> Templates
+QuizRoutes ..> FlaskApp
+Main ..> FlaskApp
 
 @enduml

@@ -1,34 +1,25 @@
-# UML-диаграммы викторины
+# UML-диаграммы
 
-## Файлы
+## technical.png — техническая (сверху вниз)
 
-| Файл | Назначение |
-|------|------------|
-| `uml-technical.puml` | Внутренняя архитектура: компоненты, классы, последовательность запросов |
-| `uml-user.puml` | Путь пользователя: активность и сценарии использования |
+1. **Импорты** — все `import` из quiz_app.py  
+2. **Пути** — `_resource_dir`, `_writable_dir`, константы APP_DIR…  
+3. **FlaskApp** — приложение, secret_key, папки шаблонов  
+4. **Question → AnswerRecord → SessionState** — структуры данных  
+5. **questions.json, results.txt** — файлы  
+6. **DataFunctions** — методы load/get/save  
+7. **QuizRoutes** — маршруты index, start, question, answer, result, restart  
+8. **Templates, style.css** — интерфейс  
+9. **Main** — `__main__`, браузер, `app.run`  
+10. **CycleStart → CycleLoop → CycleEnd** — цикл викторины (шаги 1–22)
 
-## Как открыть
+## user.png — пользовательская (сверху вниз)
 
-1. Установите [PlantUML](https://plantuml.com/) или расширение **PlantUML** в VS Code / Cursor.
-2. Откройте `.puml` и выполните предпросмотр (Preview Current Diagram).
+Шаги 1–17: запуск → старт → цикл вопросов → результат → повтор или выход.
 
-В одном `.puml` несколько блоков `@startuml` … `@enduml` — это отдельные диаграммы; в предпросмотре обычно показывается первая, переключайтесь по блокам или разделите файлы при необходимости.
-
-## Запуск приложения
-
-**Из исходников:**
-
-```bash
-pip install -r requirements.txt
-python quiz_app.py
-```
-
-**EXE (без установки Python на другом ПК):**
+## Пересборка
 
 ```bash
-python build_exe.py
+cd docs
+python generate_png.py
 ```
-
-Готовый файл: `dist\QuizApp.exe` — запустите двойным щелчком. Результаты тестов пишутся в `results.txt` рядом с EXE.
-
-Браузер откроется на http://127.0.0.1:5000/
