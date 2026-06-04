@@ -53,6 +53,7 @@ def text_block_height(lines, font, line_gap=3):
 
 
 def draw_grid(img):
+    """Сетка только на фоне, до фигур и текста."""
     draw = ImageDraw.Draw(img)
     for x in range(0, W, 20):
         draw.line([(x, 0), (x, img.height)], fill=GRID, width=1)
@@ -67,20 +68,23 @@ class Chart:
         self.title_font = load_font(14)
         self.y = 20
         self.img = Image.new("RGB", (W, 4000), BG)
+        draw_grid(self.img)
         self.draw = ImageDraw.Draw(self.img)
         self.cx = W // 2
+        self.gap_arrow = 18
 
-    def arrow(self, gap=12):
+    def arrow(self, gap=None):
+        gap = self.gap_arrow if gap is None else gap
         x = self.cx
-        y1 = self.y
-        self.y += gap
+        y1 = self.y + 4
+        self.y = y1 + gap
         y2 = self.y
-        self.draw.line([(x, y1), (x, y2)], fill=ARROW, width=1)
+        self.draw.line([(x, y1), (x, y2)], fill=ARROW, width=2)
         self.draw.polygon([(x, y2), (x - 5, y2 - 8), (x + 5, y2 - 8)], fill=ARROW)
 
     def box(self, text: str, min_h: int = 44):
         font = self.font
-        pad = 10
+        pad = 12
         lines = wrap(self.draw, text, font, BOX_W - 2 * pad)
         th = text_block_height(lines, font)
         h = max(min_h, th + 2 * pad)
@@ -93,7 +97,7 @@ class Chart:
         for line in lines:
             self.draw.text((x1 + pad, ty), line, fill=TEXT, font=font)
             ty += font.getmetrics()[0] + font.getmetrics()[1] + 3
-        self.y = y2
+        self.y = y2 + 4
         return y2
 
     def diamond(self, text: str):
@@ -110,17 +114,24 @@ class Chart:
             lw = self.draw.textlength(line, font=font)
             self.draw.text((cx - lw / 2, ty), line, fill=TEXT, font=font)
             ty += font.getmetrics()[0] + font.getmetrics()[1] + 2
-        self.y = cy + size // 2
+        self.y = cy + size // 2 + 4
 
     def label(self, text: str):
         font = self.font_b
-        lw = self.draw.textlength(text, font=font)
-        self.draw.text(((W - lw) / 2, self.y), text, fill=TEXT, font=font)
-        self.y += font.getmetrics()[0] + font.getmetrics()[1] + 8
+        pad_x, pad_y = 8, 4
+        lines = [text]
+        th = text_block_height(lines, font)
+        lw = max(self.draw.textlength(text, font=font) for text in lines)
+        x1 = (W - lw) / 2 - pad_x
+        y1 = self.y
+        x2 = (W + lw) / 2 + pad_x
+        y2 = y1 + th + 2 * pad_y
+        self.draw.rectangle([x1, y1, x2, y2], fill="#FFFFFF", outline=BOX_BORDER, width=1)
+        self.draw.text(((W - lw) / 2, y1 + pad_y), text, fill=TEXT, font=font)
+        self.y = y2 + 6
 
     def save(self):
         crop = self.img.crop((0, 0, W, self.y + 30))
-        draw_grid(crop)
         crop.save(OUT, "PNG")
         print(f"OK: {OUT} ({OUT.stat().st_size} bytes, {crop.size[0]}x{crop.size[1]})")
 
@@ -129,8 +140,13 @@ def main():
     c = Chart()
     title = "Техническая блок-схема quiz_app.py"
     tw = c.draw.textlength(title, font=c.title_font)
-    c.draw.text(((W - tw) / 2, c.y), title, fill=TEXT, font=c.title_font)
-    c.y += 28
+    th = c.title_font.getmetrics()[0] + c.title_font.getmetrics()[1]
+    pad = 8
+    x1, y1 = (W - tw) / 2 - pad, c.y
+    x2, y2 = (W + tw) / 2 + pad, c.y + th + 2 * pad
+    c.draw.rectangle([x1, y1, x2, y2], fill="#FFFFFF", outline=BOX_BORDER, width=1)
+    c.draw.text(((W - tw) / 2, c.y + pad), title, fill=TEXT, font=c.title_font)
+    c.y = y2 + 10
 
     c.label("1. Импорты")
     c.box("json, sys, threading, webbrowser\ndatetime, Path\nFlask, redirect, render_template\nrequest, session, url_for")
@@ -146,7 +162,7 @@ def main():
 
     c.label("4. Запуск __main__")
     c.diamond("questions.json\nесть?")
-    c.arrow(8)
+    c.arrow(14)
     c.box("Timer → браузер\napp.run(127.0.0.1:5000)")
     c.arrow()
 
@@ -156,25 +172,25 @@ def main():
 
     c.label("6. start  POST /start")
     c.diamond("topic в списке\nтем?")
-    c.arrow(8)
+    c.arrow(14)
     c.box("session: player_name, topic\nindex=0, score=0, answers=[]\ntotal = len(questions)\nredirect /question")
     c.arrow()
 
     c.label("7. ЦИКЛ (пока index < total)")
     c.box("GET /question\nget_questions, idx = index")
-    c.arrow(6)
+    c.arrow(14)
     c.diamond("idx >= len\nвопросов?")
-    c.arrow(8)
+    c.arrow(14)
     c.box("render question.html")
-    c.arrow(6)
+    c.arrow(14)
     c.box("POST /answer\nchosen vs correct, score++\nanswers.append, index++\nredirect /question")
-    c.arrow(6)
+    c.arrow(14)
     c.diamond("index < total?")
     c.arrow()
 
     c.label("8. result  GET /result")
     c.diamond("все ответы\nданы?")
-    c.arrow(8)
+    c.arrow(14)
     c.box("save_result → results.txt\nrender result.html")
     c.arrow()
 
