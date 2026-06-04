@@ -1,169 +1,148 @@
 @startuml technical
-title Техническая UML — сверху вниз (quiz_app.py)
+title Техническая схема quiz_app.py
 
-top to bottom direction
 skinparam shadowing false
-skinparam nodesep 14
-skinparam ranksep 20
-skinparam classFontSize 10
+skinparam roundcorner 0
+skinparam backgroundColor #F5F5F5
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam activityBackgroundColor #DAE8FC
+skinparam activityBorderColor #6C8EBF
+skinparam activityFontColor #333333
+skinparam activityDiamondBackgroundColor #FFF2CC
+skinparam activityDiamondBorderColor #D6B656
+skinparam activityDiamondFontColor #333333
+skinparam partitionBackgroundColor #FFFFFF
+skinparam partitionBorderColor #23445D
+skinparam arrowColor #6C8EBF
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #6C8EBF
 
-class Imports {
-  import json
-  import sys
-  import threading
-  import webbrowser
-  from datetime import datetime
-  from pathlib import Path
-  from flask import Flask
-  from flask import redirect
-  from flask import render_template
-  from flask import request
-  from flask import session
-  from flask import url_for
+start
+
+partition "Импорты" {
+  :json, sys, threading, webbrowser;
+  :datetime, pathlib.Path;
+  :Flask, redirect, render_template;
+  :request, session, url_for;
 }
 
-class PathHelpers {
-  + _resource_dir()
-  + _writable_dir()
+partition "Конфигурация" {
+  :_resource_dir() и _writable_dir();
+  :APP_DIR, DATA_DIR;
+  :QUESTIONS_FILE, RESULTS_FILE;
+  :создать Flask app;
+  :template_folder, static_folder, secret_key;
 }
 
-class Paths {
-  APP_DIR
-  DATA_DIR
-  QUESTIONS_FILE
-  RESULTS_FILE
+partition "Данные (что хранится)" {
+  note right
+    questions.json
+    Question: question, options, correct
+    --
+    SessionState: player_name, topic,
+    index, score, total, answers
+    AnswerRecord: question, chosen,
+    correct, is_correct
+    --
+    results.txt — лог результатов
+  end note
 }
 
-class FlaskApp {
-  template_folder
-  static_folder
-  secret_key
+partition "Запуск __main__" {
+  if (questions.json есть?) then (нет)
+    stop
+  else (да)
+  endif
+  :Timer открыть браузер;
+  :app.run 127.0.0.1:5000;
 }
 
-class Question {
-  question
-  options
-  correct
+partition "index — GET /" {
+  :session.clear();
+  :load_questions, get_topics;
+  :показать index.html;
 }
 
-class AnswerRecord {
-  question
-  chosen
-  correct
-  is_correct
+partition "start — POST /start" {
+  :взять topic из формы;
+  if (topic в списке тем?) then (нет)
+    :редирект на /;
+    stop
+  else (да)
+  endif
+  :записать player_name в session;
+  :topic, index=0, score=0;
+  :answers=[], total=число вопросов;
+  :редирект на /question;
 }
 
-class SessionState {
-  player_name
-  topic
-  index
-  score
-  total
-  answers
+partition "Цикл викторины" {
+  repeat
+    partition "question — GET /question" {
+      if (topic в session?) then (нет)
+        :редирект на /;
+        stop
+      else (да)
+      endif
+      :get_questions(topic);
+      :idx = session.index;
+      if (idx >= число вопросов?) then (да)
+        :редирект на /result;
+        break
+      else (нет)
+      endif
+      :показать question.html;
+    }
+
+    partition "answer — POST /answer" {
+      if (topic в session?) then (нет)
+        :редирект на /;
+        stop
+      else (да)
+      endif
+      :idx = session.index;
+      if (idx >= число вопросов?) then (да)
+        :редирект на /result;
+        stop
+      else (нет)
+      endif
+      :chosen = ответ из формы;
+      :сравнить с questions[idx].correct;
+      if (ответ верный?) then (да)
+        :score + 1;
+      else (нет)
+      endif
+      :добавить AnswerRecord в answers;
+      :index = idx + 1;
+      :редирект на /question;
+    }
+  repeat while (index < total?) is (да)
+  ->(нет);
 }
 
-class questions_json <<storage>> {
-  topics to Question[]
+partition "result — GET /result" {
+  if (topic в session?) then (нет)
+    :редирект на /;
+    stop
+  else (да)
+  endif
+  if (все ответы даны?) then (да)
+    :save_result в results.txt;
+  else (нет)
+  endif
+  :показать result.html и разбор;
 }
 
-class results_txt <<storage>> {
-  append log line
+partition "restart — GET /restart" {
+  if (нужен новый тест?) then (да)
+    :session.clear();
+    :редирект на /;
+    :снова index.html;
+  else (нет)
+  endif
 }
 
-class DataFunctions {
-  + load_questions()
-  + get_topics()
-  + get_questions(topic)
-  + save_result(name, topic, score, total)
-}
-
-class QuizRoutes {
-  + index() GET /
-  + start() POST /start
-  + question() GET /question
-  + answer() POST /answer
-  + result() GET /result
-  + restart() GET /restart
-}
-
-class Templates {
-  base.html
-  index.html
-  question.html
-  result.html
-}
-
-class style_css <<static>> {
-  style.css
-}
-
-class Main {
-  + __main__
-  check QUESTIONS_FILE
-  Timer webbrowser
-  app.run()
-}
-
-class CycleStart {
-  1 POST /start
-  2 check topic
-  3 fill SessionState
-  4 redirect /question
-}
-
-class CycleLoop {
-  5 GET /question
-  6 check topic
-  7 read index
-  8 if index >= len goto result
-  9 render question.html
-  10 POST /answer
-  11 parse chosen
-  12 compare correct
-  13 update score
-  14 append AnswerRecord
-  15 index increment
-  16 redirect /question
-  17 WHILE index < total goto 5
-}
-
-class CycleEnd {
-  18 GET /result
-  19 save_result if done
-  20 render result.html
-  21 GET /restart optional
-  22 session.clear
-}
-
-Imports -down-> PathHelpers
-PathHelpers -down-> Paths
-Paths -down-> FlaskApp
-
-FlaskApp -down-> Question
-Question -down-> AnswerRecord
-AnswerRecord -down-> SessionState
-
-SessionState -down-> questions_json
-questions_json -down-> results_txt
-results_txt -down-> DataFunctions
-
-DataFunctions -down-> QuizRoutes
-QuizRoutes -down-> Templates
-Templates -down-> style_css
-style_css -down-> Main
-
-Main -down-> CycleStart
-CycleStart -down-> CycleLoop
-CycleLoop -down-> CycleEnd
-
-SessionState *-- AnswerRecord
-questions_json *-- Question
-DataFunctions ..> questions_json
-DataFunctions ..> results_txt
-QuizRoutes ..> DataFunctions
-QuizRoutes ..> SessionState
-QuizRoutes ..> Templates
-QuizRoutes ..> FlaskApp
-Main ..> FlaskApp
+stop
 
 @enduml
